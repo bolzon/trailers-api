@@ -2,21 +2,35 @@ version: "3.5"
 
 services:
 
-  trailers_api:
-    image: trailers-api
-    container_name: trailers-api
-    restart: on-failure
-    hostname: trailers_api
+  lb:
+    image: jwilder/nginx-proxy
+    container_name: trailers-lb
     networks:
       trailers-network:
-        ipv4_address: 172.25.0.10
+        ipv4_address: 172.25.0.5
     ports:
-      - 3000:3000
+      - 8080:80
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    environment:
+      DEFAULT_HOST: trailers-api-proxy
+
+  trailers-api:
+    build:
+      context: .
+    image: trailers-api
+    restart: on-failure
+    networks:
+      - trailers-network
+    ports:
+      - 3000
     environment:
       REDIS_TTL: 18000
       REDIS_URL: redis://172.25.0.2:6379
       TMDB_API_KEY: ${TMDB_API_KEY}
+      VIRTUAL_HOST: trailers-api-proxy
     depends_on:
+      - lb
       - redis
 
   redis:
