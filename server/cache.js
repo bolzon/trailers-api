@@ -1,12 +1,11 @@
+const _ = require('lodash');
 const redis = require('redis');
 const { sha } = require('./hash');
 
-const EXPIRATION_TIME = 5 * 60 * 60; // in seconds
+const EXPIRATION_TIME = _.get(process.env, 'REDIS_TTL', 5 * 60 * 60); // in seconds
 
 const client = redis.createClient(process.env['REDIS_URL']);
-client.on('error', function(error) {
-  console.error(error);
-});
+client.on('error', console.error);
 
 async function getCache(url) {
   const key = sha(url);

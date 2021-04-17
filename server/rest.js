@@ -2,7 +2,7 @@ const _ = require('lodash');
 const axios = require('axios');
 const { getCache, setCache } = require('./cache');
 
-const API_KEY = process.env['TMDB_API_KEY'];
+const API_KEY = _.get(process.env, 'TMDB_API_KEY', 'null');
 const TMDB_VIDEO_URL = `https://api.themoviedb.org/3/movie/{MOVIE_ID}/videos?api_key=${API_KEY}&language=en-US`;
 const TMDB_IMDB_URL = `https://api.themoviedb.org/3/find/{IMDB_ID}?api_key=${API_KEY}&language=en-US&external_source=imdb_id`;
 
