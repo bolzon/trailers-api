@@ -9,6 +9,9 @@ const { getTrailerUrls } = require('./rest');
 const app = express();
 app.use(jsonParser);
 
+// hostname api
+app.get('/', (req, res) => res.send(process.env['HOSTNAME']));
+
 // health check api
 app.all('/check', (req, res) => res.status(200).end());
 

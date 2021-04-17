@@ -8,7 +8,7 @@ COPY server/ ./server
 RUN npm ci --only=production
 
 HEALTHCHECK --interval=10s --timeout=2s --start-period=15s \
-  CMD node healthcheck.js
+  CMD node server/healthcheck.js
 
 EXPOSE 3000
 CMD [ "npm", "start" ]
