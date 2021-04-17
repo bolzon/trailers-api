@@ -7,7 +7,8 @@ https://content.viaplay.se/pc-se/film/arrival-2016
 The application uses Redis for caching and so it's needed to properly configure the database URL before running it.
 
 ```sh
-export REDIS_URL=<my_redis_url>
+export REDIS_URL=<my_redis_url> # redis URL
+export REDIS_TTL=<time_to_live> # time cache will live (in secs)
 ```
 
 Movie details are brought from [TMDB](https://www.themoviedb.org/) and a key is necessary to authenticate their API.
