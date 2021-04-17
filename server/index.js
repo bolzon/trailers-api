@@ -17,9 +17,13 @@ app.all('/check', (req, res) => res.status(200).end());
 
 // trailers api
 app.post('/trailers', async (req, res) => {
-  const url = _.get(req.body, 'viaplay_url', null);
-  if (url) {
-    res.json({ 'trailer_urls': await getTrailerUrls(url) });
+  const viaplay_url = _.get(req.body, 'viaplay_url', null);
+  if (viaplay_url) {
+    try {
+      res.json({ 'trailer_urls': await getTrailerUrls(viaplay_url) });
+    } catch (ex) {
+      res.status(404).json({ error: 'Trailer not found for this title', viaplay_url });
+    }
   } else {
     res.status(400).json({ error: 'Missing param: [viaplay_url]'});
   }
