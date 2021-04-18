@@ -66,6 +66,33 @@ App should return a JSON body with a list of trailer URLs like this:
 {"trailer_urls":["https://youtu.be/tFMo3UJ4B4g","https://youtu.be/7W1m5ER3I1Y"]}
 ```
 
+## Performance tests
+
+To measure the performance of the application, it was used [Locust](https://locust.io/), that's a Python loadtesting tool.
+
+```sh
+cd tests
+
+pipenv install
+
+locust -f perftest.py -L INFO \
+       --csv=report --only-summary --headless \
+       -u <num of users> -r <spawn time> -t <test time>
+```
+
+To improve performance, better creating a cluster of at least 5 application containers.
+
+```sh
+docker-compose scale trailers-api=4
+```
+
+## What else was needed?
+
+- Unit tests for the software parts (I'd have used [mocha](https://mochajs.org/))
+- CI/CD script to deploy the application (I'd have used [CircleCI](https://circleci.com/) or [Travis CI](https://travis-ci.org/))
+- Linter to keep the code quality high (I'd have used [ESLint](https://eslint.org/))
+- IaC (Infrastructure as Code) with [CloudFormation](https://aws.amazon.com/cloudformation/) or [Terraform](https://www.terraform.io/)
+
 ## Credits and license
 
 Software designed and written by [Alexandre Bolzon](mailto:blzn@mail.ru) as part of the interview process for [NENT Group](https://www.nentgroup.com/).

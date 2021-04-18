@@ -105,3 +105,4 @@ dist
 
 .vscode
 **/__pycache__
+tests/report*.csv
