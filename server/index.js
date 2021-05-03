@@ -2,12 +2,12 @@ require('dotenv').config();
 
 const _ = require('lodash');
 const express = require('express');
-const jsonParser = require('body-parser').json();
 const { getTrailerUrls } = require('./rest');
 
 // express app
 const app = express();
-app.use(jsonParser);
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 // hostname api
 app.get('/', (req, res) => res.send(process.env['HOSTNAME']));
