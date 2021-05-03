@@ -8,25 +8,22 @@ const TMDB_IMDB_URL = `https://api.themoviedb.org/3/find/{IMDB_ID}?api_key=${API
 
 async function getJsonContent(url) {
   try {
-    const res = await axios({
-      url,
-      method: 'get',
-      responseType: 'json'
-    });
-    if (res.status != 200) {
-      throw new Error(`Status: ${res.status}`);
-    }
+    const res = await axios({ url, method: 'get', responseType: 'json' });
     return res.data;
   } catch (ex) {
-    console.error(ex);
+    const statusCode = parseInt(_.get(ex, 'response.status'));
+    if (statusCode) {
+      // inject response status into exception object
+      ex.statusCode = statusCode;
+    }
+    // console.error(ex);
     throw ex;
   }
 }
 
 async function getImdbId(viaplayMovieUrl) {
   const viaplay = await getJsonContent(viaplayMovieUrl);
-  const imdbId = _.get(viaplay, '_embedded["viaplay:blocks"][0]._embedded["viaplay:product"].content.imdb.id');
-  return imdbId;
+  return _.get(viaplay, '_embedded["viaplay:blocks"][0]._embedded["viaplay:product"].content.imdb.id');
 }
 
 async function getTmdbId(imdbId) {
@@ -55,9 +52,15 @@ async function getTrailerUrls(viaplayMovieUrl) {
   let tmdbTrailers = await getCache(viaplayMovieUrl);
   if (!tmdbTrailers) {
     const imdbId = await getImdbId(viaplayMovieUrl);
-    const tmdbId = await getTmdbId(imdbId);
-    tmdbTrailers = await getTmdbTrailers(tmdbId);
-    await setCache(viaplayMovieUrl, tmdbTrailers);
+    if (imdbId) {
+      const tmdbId = await getTmdbId(imdbId);
+      if (tmdbId) {
+        tmdbTrailers = await getTmdbTrailers(tmdbId);
+        if (tmdbTrailers) {
+          await setCache(viaplayMovieUrl, tmdbTrailers);
+        }
+      }
+    }
   }
   return tmdbTrailers;
 }

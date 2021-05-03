@@ -5,9 +5,10 @@ const express = require('express');
 const { getTrailerUrls } = require('./rest');
 const { validateViaplayUrl } = require('./validation');
 
+const INVALID_TMDB_API_KEY = 'Invalid TMDB API key';
 const INVALID_VIAPLAY_URL = 'Invalid viaplay URL';
 const MISSING_VIAPLAY_URL = 'Missing GET param: [viaplay_url]';
-const TRAILER_NOT_FOUND   = 'Trailer not found for this title';
+const TRAILER_NOT_FOUND = 'Trailer not found for this title';
 
 // express app
 const app = express();
@@ -22,17 +23,23 @@ app.get('/trailers', async (req, res) => {
   const viaplay_url = _.get(req.query, 'viaplay_url', '').toLowerCase();
   if (!viaplay_url) {
     return res.status(400).json({ error: MISSING_VIAPLAY_URL });
-  }
-
-  if (!validateViaplayUrl(viaplay_url)) {
+  } else if (!validateViaplayUrl(viaplay_url)) {
     return res.status(400).json({ error: INVALID_VIAPLAY_URL });
   }
 
   try {
-    res.json({ 'trailer_urls': await getTrailerUrls(viaplay_url) });
-  } catch {
-    res.status(404).json({ error: TRAILER_NOT_FOUND, viaplay_url });
+    const trailer_urls = await getTrailerUrls(viaplay_url);
+    if (trailer_urls) {
+      return res.json({ trailer_urls });
+    }
+  } catch (ex) {
+    if (ex.statusCode === 401) { // unauthorized
+      return res.status(401).json({ error: INVALID_TMDB_API_KEY });
+    }
   }
+
+  // other exceptions will be considered as "not found"
+  res.status(404).json({ error: TRAILER_NOT_FOUND, viaplay_url });
 });
 
 app.listen(3000);
