@@ -55,10 +55,11 @@ Where "**N**" is the number of the application instances that will be deployed.
 To test the API, use curl:
 
 ```sh
-curl -X POST -H 'Content-type: application/json' \
-     -d '{"viaplay_url":"https://content.viaplay.se/pc-se/film/arrival-2016"}' \
-     0.0.0.0:8080/trailers
+curl -H 'Content-type: application/json' \
+     0.0.0.0:8080/trailers?viaplay_url=https://content.viaplay.se/pc-se/film/arrival-2016
 ```
+
+> Use port 8080 for applications running in containers and 3000 for application running locally.
 
 App should return a JSON body with a list of trailer URLs like this:
 
