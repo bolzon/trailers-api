@@ -13,6 +13,10 @@ async function getJsonContent(url) {
   } catch (ex) {
     const statusCode = parseInt(_.get(ex, 'response.status'));
     if (statusCode) {
+      if (statusCode === 400) {
+        // if not found returns null
+        return null;
+      }
       // inject response status into exception object
       ex.statusCode = statusCode;
     }
@@ -55,6 +59,8 @@ async function getTrailerUrls(viaplayMovieUrl) {
         tmdbTrailers = await getTmdbTrailers(tmdbId);
         await setCache(viaplayMovieUrl, tmdbTrailers);
       }
+    } else {
+      await setCache(viaplayMovieUrl, []);
     }
   }
   return tmdbTrailers || [];
