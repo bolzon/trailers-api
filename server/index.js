@@ -12,9 +12,6 @@ app.use(express.urlencoded({ extended: false }));
 // hostname api
 app.get('/', (req, res) => res.send(process.env['HOSTNAME']));
 
-// health check api
-app.all('/check', (req, res) => res.status(200).end());
-
 // trailers api
 app.post('/trailers', async (req, res) => {
   const viaplay_url = _.get(req.body, 'viaplay_url', null);
