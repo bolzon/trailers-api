@@ -10,6 +10,12 @@ const INVALID_VIAPLAY_URL = 'Invalid viaplay URL';
 const MISSING_VIAPLAY_URL = 'Missing GET param: [viaplay_url]';
 const TRAILER_NOT_FOUND = 'Trailer not found for this title';
 
+// check missing TMDB api key
+if (!_.get(process.env, 'TMDB_API_KEY')) {
+  console.error('Please setup TMDB_API_KEY before running the application.');
+  process.exit(1);
+}
+
 // express app
 const app = express();
 app.use(express.json());
