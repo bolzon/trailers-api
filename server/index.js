@@ -35,7 +35,7 @@ app.get('/trailers', async (req, res) => {
 
   try {
     const trailer_urls = await getTrailerUrls(viaplay_url);
-    if (trailer_urls) {
+    if (trailer_urls && trailer_urls.length) {
       return res.json({ trailer_urls });
     }
   } catch (ex) {
