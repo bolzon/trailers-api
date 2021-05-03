@@ -16,7 +16,6 @@ async function getJsonContent(url) {
       // inject response status into exception object
       ex.statusCode = statusCode;
     }
-    // console.error(ex);
     throw ex;
   }
 }

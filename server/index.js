@@ -39,6 +39,7 @@ app.get('/trailers', async (req, res) => {
       return res.json({ trailer_urls });
     }
   } catch (ex) {
+    console.error(ex);
     if (ex.statusCode === 401) { // unauthorized
       return res.status(401).json({ error: INVALID_TMDB_API_KEY });
     }
