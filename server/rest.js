@@ -3,30 +3,30 @@ const axios = require('axios');
 const { getCache, setCache } = require('./cache');
 
 const API_KEY = _.get(process.env, 'TMDB_API_KEY', 'null');
-const TMDB_VIDEO_URL = `https://api.themoviedb.org/3/movie/{MOVIE_ID}/videos?api_key=${API_KEY}&language=en-US`;
-const TMDB_IMDB_URL = `https://api.themoviedb.org/3/find/{IMDB_ID}?api_key=${API_KEY}&language=en-US&external_source=imdb_id`;
+const TMDB_VIDEO_URL = `https://api.themoviedb.org/3/movie/{MOVIE_ID}/videos?language=en-US&api_key=${API_KEY}`;
+const TMDB_IMDB_URL = `https://api.themoviedb.org/3/find/{IMDB_ID}?language=en-US&external_source=imdb_id&api_key=${API_KEY}`;
 
 async function getJsonContent(url) {
   try {
-    const res = await axios({
-      url,
-      method: 'get',
-      responseType: 'json'
-    });
-    if (res.status != 200) {
-      throw new Error(`Status: ${res.status}`);
-    }
+    const res = await axios({ url, method: 'get', responseType: 'json' });
     return res.data;
   } catch (ex) {
-    console.error(ex);
+    const statusCode = parseInt(_.get(ex, 'response.status'));
+    if (statusCode) {
+      if (statusCode === 400) {
+        // if not found returns null
+        return null;
+      }
+      // inject response status into exception object
+      ex.statusCode = statusCode;
+    }
     throw ex;
   }
 }
 
 async function getImdbId(viaplayMovieUrl) {
   const viaplay = await getJsonContent(viaplayMovieUrl);
-  const imdbId = _.get(viaplay, '_embedded["viaplay:blocks"][0]._embedded["viaplay:product"].content.imdb.id');
-  return imdbId;
+  return _.get(viaplay, '_embedded["viaplay:blocks"][0]._embedded["viaplay:product"].content.imdb.id');
 }
 
 async function getTmdbId(imdbId) {
@@ -43,23 +43,27 @@ async function getTmdbId(imdbId) {
 async function getTmdbTrailers(tmdbId) {
   const tmdbVideoUrl = TMDB_VIDEO_URL.replace('{MOVIE_ID}', tmdbId);
   const movieVideo = await getJsonContent(tmdbVideoUrl);
-  let results = _.filter(movieVideo.results, r => /^trailer$/i.test(r.type) && /youtube/i.test(r.site));
-  if (results.length == 0) {
-    results = movieVideo.results;
-  }
-  const trailers = _.map(results, t => `https://youtu.be/${t.key}`);
-  return trailers;
+  const results = _.filter(movieVideo.results, r => /^trailer$/i.test(r.type) && /(youtube|vimeo)/i.test(r.site));
+  return _.map(results, r => /vimeo/i.test(r.site)
+    ? `https://vimeo.com/${r.key}`
+    : `https://youtu.be/${r.key}`);
 }
 
 async function getTrailerUrls(viaplayMovieUrl) {
   let tmdbTrailers = await getCache(viaplayMovieUrl);
   if (!tmdbTrailers) {
     const imdbId = await getImdbId(viaplayMovieUrl);
-    const tmdbId = await getTmdbId(imdbId);
-    tmdbTrailers = await getTmdbTrailers(tmdbId);
-    await setCache(viaplayMovieUrl, tmdbTrailers);
+    if (imdbId) {
+      const tmdbId = await getTmdbId(imdbId);
+      if (tmdbId) {
+        tmdbTrailers = await getTmdbTrailers(tmdbId);
+        await setCache(viaplayMovieUrl, tmdbTrailers);
+      }
+    } else {
+      await setCache(viaplayMovieUrl, []);
+    }
   }
-  return tmdbTrailers;
+  return tmdbTrailers || [];
 }
 
 module.exports = { getTrailerUrls };
